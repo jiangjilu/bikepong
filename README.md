@@ -29,6 +29,10 @@ npm run dev
 
 ```console
 npx remotion render
+
+# or use Git Bash with options
+rm -rf node_modules/.cache && npx remotion render src/index.ts HelloWorld out/myOutput.webm --no-cache
+
 ```
 
 **Upgrade Remotion**
