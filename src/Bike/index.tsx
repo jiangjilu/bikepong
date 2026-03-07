@@ -15,23 +15,13 @@ import { createTikTokStyleCaptions } from "@remotion/captions";
 import { CaptionDisplay } from "./CaptionDisplay";
 import { assetsLibrary } from "./assets";
 
-// 定义 Schema
-export const bikeSchema = z.object({
-  videoId: z
-    .enum(
-      assetsLibrary.videos.map((v) => v.id) as [string, ...string[]],
-    )
-    .describe("选择视频素材"),
-  audioId: z
-    .enum(
-      assetsLibrary.audios.map((a) => a.id) as [string, ...string[]],
-    )
-    .describe("选择音频素材"),
-  captionText: z.string().describe("输入文案内容"),
-  audioVolume: z.number().min(0).max(1).default(0.5).describe("音频音量"),
-});
-
-export type BikeProps = z.infer<typeof bikeSchema>;
+// Props 类型定义
+export interface BikeProps {
+  videoId: string;
+  audioId: string;
+  captionText: string;
+  audioVolume: number;
+}
 
 const SWITCH_CAPTIONS_EVERY_MS = 1200;
 
@@ -48,6 +38,14 @@ export const Bike: React.FC<BikeProps> = ({
   // 获取选中的素材
   const selectedVideo = assetsLibrary.videos.find((v) => v.id === videoId);
   const selectedAudio = assetsLibrary.audios.find((a) => a.id === audioId);
+
+  // 如果找不到素材，显示可用素材列表
+  if (!selectedVideo) {
+    console.warn(`视频素材 "${videoId}" 未找到。可用素材:`, assetsLibrary.videos.map(v => v.id));
+  }
+  if (!selectedAudio) {
+    console.warn(`音频素材 "${audioId}" 未找到。可用素材:`, assetsLibrary.audios.map(a => a.id));
+  }
 
   // 生成字幕数据
   const generateCaptions = useCallback(() => {
@@ -102,16 +100,30 @@ export const Bike: React.FC<BikeProps> = ({
     });
   }, [captions]);
 
-  // 检查文件是否存在（通过检查路径）
-  const hasVideoFile = false; // 设置为 false 用于测试
-  const hasAudioFile = false; // 设置为 false 用于测试
+  // 判断是否为用户上传的素材（blob URL）
+  const isUserUploadedVideo = selectedVideo?.isUserUploaded || selectedVideo?.path.startsWith("blob:");
+  const isUserUploadedAudio = selectedAudio?.isUserUploaded || selectedAudio?.path.startsWith("blob:");
+
+  // 获取视频源
+  const videoSrc = selectedVideo
+    ? isUserUploadedVideo
+      ? selectedVideo.path
+      : staticFile(selectedVideo.path)
+    : null;
+
+  // 获取音频源
+  const audioSrc = selectedAudio
+    ? isUserUploadedAudio
+      ? selectedAudio.path
+      : staticFile(selectedAudio.path)
+    : null;
 
   return (
     <AbsoluteFill style={{ backgroundColor: "transparent" }}>
-      {/* 背景视频 - 如果素材不存在则显示占位符 */}
-      {selectedVideo && hasVideoFile ? (
+      {/* 背景视频 */}
+      {videoSrc ? (
         <Video
-          src={staticFile(selectedVideo.path)}
+          src={videoSrc}
           style={{
             width: "100%",
             height: "100%",
@@ -150,10 +162,8 @@ export const Bike: React.FC<BikeProps> = ({
         </AbsoluteFill>
       )}
 
-      {/* 背景音乐 - 如果素材存在才播放 */}
-      {selectedAudio && hasAudioFile && (
-        <Audio src={staticFile(selectedAudio.path)} volume={audioVolume} />
-      )}
+      {/* 背景音乐 */}
+      {audioSrc && <Audio src={audioSrc} volume={audioVolume} />}
 
       {/* 字幕 */}
       {pages.map((page, index) => {
