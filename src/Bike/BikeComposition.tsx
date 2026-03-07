@@ -44,10 +44,10 @@ export const BikeComposition: React.FC = () => {
     <Composition
       id="Bike"
       component={Bike}
-      durationInFrames={300}
-      fps={30}
-      width={1920}
-      height={1080}
+      durationInFrames={600}
+      fps={60}
+      width={1080}
+      height={1920}
       schema={schema}
       defaultProps={{
         videoId: "mtb-default",
