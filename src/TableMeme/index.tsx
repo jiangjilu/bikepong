@@ -21,15 +21,15 @@ export const tableMemeSchema = z.object({
   // 学霸回答
   smartStudentLabel: z.string().default("学霸："),
   smartStudentAnswer: z.string().default("桌子"),
-  smartStudentMedia: z.string().default("desk.jpg"), // 图片或视频路径
+  smartStudentMedia: z.string().default("images/table.jpg"), // 图片或视频路径
   smartStudentMediaType: z.enum(["image", "video"]).default("image"),
-  smartStudentSfx: z.string().default("magic.mp3"), // 音效
+  smartStudentSfx: z.string().default("audios/magic.mp3"), // 音效
   
   // 我的回答
   myLabel: z.string().default("我："),
-  myMedia: z.string().default("videos/MTB.mp4"), // 图片或视频路径
+  myMedia: z.string().default("videos/table.mp4"), // 图片或视频路径
   myMediaType: z.enum(["image", "video"]).default("video"),
-  mySfx: z.string().default("audios/GasPedal.mp3"), // 音效
+  mySfx: z.string().default("audios/alert.mp3"), // 音效
   
   // 音量控制
   sfxVolume: z.number().min(0).max(1).default(0.5),
@@ -55,18 +55,24 @@ export const TableMeme: React.FC<TableMemeProps> = ({
 
   // 时间轴设置（以帧为单位，60fps）
   const QUESTION_START = 0;
-  const QUESTION_DURATION = 120; // 2秒
+  const QUESTION_DURATION = 30; // 0.5秒 - 只显示问题
   
-  const SMART_STUDENT_START = QUESTION_DURATION;
-  const SMART_STUDENT_DURATION = 180; // 3秒
+  const SMART_TEXT_START = QUESTION_DURATION;
+  const SMART_TEXT_DURATION = 30; // 0.5秒 - 学霸文字回答
   
-  const MY_ANSWER_START = SMART_STUDENT_START + SMART_STUDENT_DURATION;
-  const MY_ANSWER_DURATION = 240; // 4秒
+  const SMART_IMAGE_START = SMART_TEXT_START + SMART_TEXT_DURATION;
+  const SMART_IMAGE_DURATION = 60; // 1秒 - 学霸图片
+  
+  const MY_LABEL_START = SMART_IMAGE_START + SMART_IMAGE_DURATION;
+  const MY_LABEL_DURATION = 60; // 1秒 - 只显示"我："
+  
+  const MY_ANSWER_START = MY_LABEL_START + MY_LABEL_DURATION;
+  const MY_ANSWER_DURATION = 60; // 1秒 - 我的回答
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>
-      {/* 第一部分：问题 - 直接显示 */}
-      <Sequence from={QUESTION_START} durationInFrames={QUESTION_DURATION + SMART_STUDENT_DURATION + MY_ANSWER_DURATION}>
+      {/* 第一部分：问题 - 默认显示 */}
+      <Sequence from={QUESTION_START} durationInFrames={QUESTION_DURATION + SMART_TEXT_DURATION + SMART_IMAGE_DURATION + MY_LABEL_DURATION + MY_ANSWER_DURATION}>
         <QuestionSection
           prefix={questionPrefix}
           highlight={highlightWord}
@@ -74,22 +80,32 @@ export const TableMeme: React.FC<TableMemeProps> = ({
         />
       </Sequence>
 
-      {/* 第二部分：学霸回答 - 淡入显示 */}
-      <Sequence from={SMART_STUDENT_START} durationInFrames={SMART_STUDENT_DURATION + MY_ANSWER_DURATION}>
-        <SmartStudentSection
+      {/* 第二部分：学霸文字回答 - 0.5秒后出现 */}
+      <Sequence from={SMART_TEXT_START} durationInFrames={SMART_TEXT_DURATION + SMART_IMAGE_DURATION + MY_LABEL_DURATION + MY_ANSWER_DURATION}>
+        <SmartStudentText
           label={smartStudentLabel}
           answer={smartStudentAnswer}
-          media={smartStudentMedia}
-          mediaType={smartStudentMediaType}
           sfx={smartStudentSfx}
           sfxVolume={sfxVolume}
         />
       </Sequence>
 
-      {/* 第三部分：我的回答 - 重点隆重显示 */}
+      {/* 第三部分：学霸图片 - 再0.5秒后出现 */}
+      <Sequence from={SMART_IMAGE_START} durationInFrames={SMART_IMAGE_DURATION + MY_LABEL_DURATION + MY_ANSWER_DURATION}>
+        <SmartStudentImage
+          media={smartStudentMedia}
+          mediaType={smartStudentMediaType}
+        />
+      </Sequence>
+
+      {/* 第四部分：只显示"我："标签 - 再1秒后 */}
+      <Sequence from={MY_LABEL_START} durationInFrames={MY_LABEL_DURATION + MY_ANSWER_DURATION}>
+        <MyLabelOnly label={myLabel} />
+      </Sequence>
+
+      {/* 第五部分：我的回答媒体内容 - 再1秒后 */}
       <Sequence from={MY_ANSWER_START} durationInFrames={MY_ANSWER_DURATION}>
-        <MyAnswerSection
-          label={myLabel}
+        <MyAnswerMedia
           media={myMedia}
           mediaType={myMediaType}
           sfx={mySfx}
@@ -138,32 +154,16 @@ const QuestionSection: React.FC<{
   );
 };
 
-// 学霸回答组件
-const SmartStudentSection: React.FC<{
+// 学霸文字回答组件 - 只显示文字
+const SmartStudentText: React.FC<{
   label: string;
   answer: string;
-  media: string;
-  mediaType: "image" | "video";
   sfx: string;
   sfxVolume: number;
-}> = ({ label, answer, media, mediaType, sfx, sfxVolume }) => {
-  const frame = useCurrentFrame();
-  
-  // 淡入动画（60fps，调整帧数）
-  const opacity = interpolate(frame, [0, 40], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  const translateY = interpolate(frame, [0, 40], [30, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.ease),
-  });
-
+}> = ({ label, answer, sfx, sfxVolume }) => {
   return (
     <>
-      {/* 音效 - 始终渲染，让 Remotion 处理时间轴 */}
+      {/* 音效 */}
       {sfx && (
         <Audio src={staticFile(sfx)} volume={sfxVolume} startFrom={0} />
       )}
@@ -174,8 +174,6 @@ const SmartStudentSection: React.FC<{
           top: "15%",
           left: "10%",
           right: "10%",
-          transform: `translateY(${translateY}px)`,
-          opacity,
         }}
       >
         {/* 标签和答案 - 独立一行 */}
@@ -189,15 +187,163 @@ const SmartStudentSection: React.FC<{
           {label}
           <span style={{ marginLeft: "10px" }}>{answer}</span>
         </div>
+      </div>
+    </>
+  );
+};
 
-        {/* 媒体内容 */}
+// 学霸图片组件 - 只显示图片
+const SmartStudentImage: React.FC<{
+  media: string;
+  mediaType: "image" | "video";
+}> = ({ media, mediaType }) => {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "15%",
+        left: "10%",
+        right: "10%",
+      }}
+    >
+      {/* 占位文字（不可见，用于保持布局） */}
+      <div
+        style={{
+          fontSize: "63px",
+          color: "transparent",
+          marginBottom: "20px",
+        }}
+      >
+        学霸：桌子
+      </div>
+
+      {/* 媒体内容 */}
+      <div
+        style={{
+          width: "100%",
+          height: "420px",
+          borderRadius: "15px",
+          overflow: "hidden",
+          boxShadow: "0 10px 40px rgba(255, 255, 255, 0.2)",
+        }}
+      >
+        {mediaType === "image" ? (
+          <Img
+            src={staticFile(media)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        ) : (
+          <Video
+            src={staticFile(media)}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+            muted
+          />
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 只显示"我："标签 - 制造悬念
+const MyLabelOnly: React.FC<{
+  label: string;
+}> = ({ label }) => {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "10%",
+        right: "10%",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "78px",
+          fontWeight: "bold",
+          color: "#FFD700",
+          textShadow: "0 0 20px rgba(255, 215, 0, 0.8)",
+        }}
+      >
+        {label}
+      </div>
+    </div>
+  );
+};
+
+// 我的回答媒体内容 - 反转效果
+const MyAnswerMedia: React.FC<{
+  media: string;
+  mediaType: "image" | "video";
+  sfx: string;
+  sfxVolume: number;
+}> = ({ media, mediaType, sfx, sfxVolume }) => {
+  const frame = useCurrentFrame();
+  
+  // 缩放 + 旋转入场动画（60fps，快速有冲击力）
+  const scale = interpolate(frame, [0, 40], [0.3, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.back(1.5)),
+  });
+
+  const rotate = interpolate(frame, [0, 40], [-15, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.ease),
+  });
+
+  const opacity = interpolate(frame, [0, 15], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
+
+  return (
+    <>
+      {/* 音效 - 确保播放 */}
+      <Audio src={staticFile(sfx)} volume={sfxVolume} />
+      
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "10%",
+          right: "10%",
+        }}
+      >
+        {/* 标签 - 保持显示 */}
+        <div
+          style={{
+            fontSize: "78px",
+            fontWeight: "bold",
+            color: "#FFD700",
+            marginBottom: "20px",
+            textShadow: "0 0 20px rgba(255, 215, 0, 0.8)",
+          }}
+        >
+          我：
+        </div>
+
+        {/* 媒体内容 - 动画入场 */}
         <div
           style={{
             width: "100%",
-            height: "420px",
-            borderRadius: "15px",
+            height: "500px",
+            borderRadius: "20px",
             overflow: "hidden",
-            boxShadow: "0 10px 40px rgba(255, 255, 255, 0.2)",
+            border: "6px solid #FFD700",
+            boxShadow: "0 0 50px rgba(255, 215, 0, 0.6)",
+            transform: `scale(${scale}) rotate(${rotate}deg)`,
+            transformOrigin: "left center",
+            opacity,
           }}
         >
           {mediaType === "image" ? (
@@ -226,98 +372,4 @@ const SmartStudentSection: React.FC<{
   );
 };
 
-// 我的回答组件
-const MyAnswerSection: React.FC<{
-  label: string;
-  media: string;
-  mediaType: "image" | "video";
-  sfx: string;
-  sfxVolume: number;
-}> = ({ label, media, mediaType, sfx, sfxVolume }) => {
-  const frame = useCurrentFrame();
-  
-  // 缩放 + 旋转入场动画（60fps，调整帧数）
-  const scale = interpolate(frame, [0, 60], [0.3, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.back(1.5)),
-  });
 
-  const rotate = interpolate(frame, [0, 60], [-15, 0], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-    easing: Easing.out(Easing.ease),
-  });
-
-  const opacity = interpolate(frame, [0, 30], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
-
-  return (
-    <>
-      {/* 音效 - 始终渲染，让 Remotion 处理时间轴 */}
-      {sfx && (
-        <Audio src={staticFile(sfx)} volume={sfxVolume} startFrom={0} />
-      )}
-      
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "10%",
-          right: "10%",
-          transform: `scale(${scale}) rotate(${rotate}deg)`,
-          transformOrigin: "left center",
-          opacity,
-        }}
-      >
-        {/* 标签 - 独立一行 */}
-        <div
-          style={{
-            fontSize: "78px",
-            fontWeight: "bold",
-            color: "#FFD700",
-            marginBottom: "20px",
-            textShadow: "0 0 20px rgba(255, 215, 0, 0.8)",
-          }}
-        >
-          {label}
-        </div>
-
-        {/* 媒体内容 - 更大更突出，为底部留出空间 */}
-        <div
-          style={{
-            width: "100%",
-            height: "500px",
-            borderRadius: "20px",
-            overflow: "hidden",
-            border: "6px solid #FFD700",
-            boxShadow: "0 0 50px rgba(255, 215, 0, 0.6)",
-          }}
-        >
-          {mediaType === "image" ? (
-            <Img
-              src={staticFile(media)}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-            />
-          ) : (
-            <Video
-              src={staticFile(media)}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-              }}
-              muted={false}
-            />
-          )}
-        </div>
-      </div>
-    </>
-  );
-};

@@ -59,7 +59,7 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="TableMeme"
         component={TableMeme}
-        durationInFrames={540} // 9秒 @ 60fps
+        durationInFrames={240} // 4秒 @ 60fps
         fps={60}
         width={1080}
         height={1920}
@@ -77,7 +77,7 @@ export const RemotionRoot: React.FC = () => {
           myMedia: "videos/table.mp4",
           myMediaType: "video" as const,
           mySfx: "audios/alert.mp3",
-          sfxVolume: 0.5,
+          sfxVolume: 1,
         }}
       />
     </>
