@@ -110,33 +110,29 @@ const QuestionSection: React.FC<{
     <div
       style={{
         position: "absolute",
-        top: "10%",
-        left: "50%",
-        transform: "translateX(-50%)",
+        top: "5%",
+        left: "10%",
+        right: "10%",
         display: "flex",
-        flexDirection: "column",
         alignItems: "center",
-        gap: "15px",
-        fontSize: "48px",
+        gap: "12px",
+        fontSize: "66px",
         fontWeight: "bold",
         color: "#fff",
-        textAlign: "center",
-        padding: "0 40px",
+        flexWrap: "wrap",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", justifyContent: "center" }}>
-        <span>{prefix}</span>
-        <span
-          style={{
-            backgroundColor: "#FFD700",
-            color: "#000",
-            padding: "8px 25px",
-            borderRadius: "12px",
-          }}
-        >
-          {highlight}
-        </span>
-      </div>
+      <span>{prefix}</span>
+      <span
+        style={{
+          backgroundColor: "#FFD700",
+          color: "#000",
+          padding: "12px 38px",
+          borderRadius: "18px",
+        }}
+      >
+        {highlight}
+      </span>
       <span>{suffix}</span>
     </div>
   );
@@ -175,21 +171,19 @@ const SmartStudentSection: React.FC<{
       <div
         style={{
           position: "absolute",
-          top: "28%",
-          left: "50%",
-          transform: `translateX(-50%) translateY(${translateY}px)`,
+          top: "15%",
+          left: "10%",
+          right: "10%",
+          transform: `translateY(${translateY}px)`,
           opacity,
-          width: "90%",
-          maxWidth: "900px",
         }}
       >
-        {/* 标签和答案 */}
+        {/* 标签和答案 - 独立一行 */}
         <div
           style={{
-            fontSize: "42px",
+            fontSize: "63px",
             color: "#fff",
             marginBottom: "20px",
-            textAlign: "center",
           }}
         >
           {label}
@@ -200,7 +194,7 @@ const SmartStudentSection: React.FC<{
         <div
           style={{
             width: "100%",
-            height: "500px",
+            height: "420px",
             borderRadius: "15px",
             overflow: "hidden",
             boxShadow: "0 10px 40px rgba(255, 255, 255, 0.2)",
@@ -270,33 +264,32 @@ const MyAnswerSection: React.FC<{
       <div
         style={{
           position: "absolute",
-          bottom: "8%",
-          left: "50%",
-          transform: `translateX(-50%) scale(${scale}) rotate(${rotate}deg)`,
+          top: "50%",
+          left: "10%",
+          right: "10%",
+          transform: `scale(${scale}) rotate(${rotate}deg)`,
+          transformOrigin: "left center",
           opacity,
-          width: "90%",
-          maxWidth: "900px",
         }}
       >
-        {/* 标签 */}
+        {/* 标签 - 独立一行 */}
         <div
           style={{
-            fontSize: "52px",
+            fontSize: "78px",
             fontWeight: "bold",
             color: "#FFD700",
             marginBottom: "20px",
             textShadow: "0 0 20px rgba(255, 215, 0, 0.8)",
-            textAlign: "center",
           }}
         >
           {label}
         </div>
 
-        {/* 媒体内容 - 更大更突出 */}
+        {/* 媒体内容 - 更大更突出，为底部留出空间 */}
         <div
           style={{
             width: "100%",
-            height: "600px",
+            height: "500px",
             borderRadius: "20px",
             overflow: "hidden",
             border: "6px solid #FFD700",
