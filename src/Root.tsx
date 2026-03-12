@@ -79,7 +79,7 @@ export const RemotionRoot: React.FC = () => {
           smartStudentMediaType: "image" as const,
           smartStudentSfx: "audios/magic.mp3",
           myLabel: "我：",
-          myMedia: "videos/MTB.mp4",
+          myMedia: "videos/table.mp4",
           myMediaType: "video" as const,
           mySfx: "audios/alert.mp3",
           sfxVolume: 1,
