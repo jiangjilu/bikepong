@@ -4,6 +4,7 @@ import { HelloWorld, myCompSchema } from "./HelloWorld";
 import { Logo, myCompSchema2 } from "./HelloWorld/Logo";
 import { BikeComposition } from "./Bike/BikeComposition";
 import { AssetManager } from "./Bike/AssetManager";
+import { TableMeme, tableMemeSchema } from "./TableMeme";
 
 // Each <Composition> is an entry in the sidebar!
 
@@ -29,7 +30,6 @@ export const RemotionRoot: React.FC = () => {
           logoColor2: "#86A8E7",
         }}
       />
-
       {/* Mount any React component to make it show up in the sidebar and work on it individually! */}
       <Composition
         id="OnlyLogo"
@@ -44,7 +44,6 @@ export const RemotionRoot: React.FC = () => {
           logoColor2: "#86A8E7" as const,
         }}
       />
-
       {/* 素材管理中心 - 上传和管理视频音频素材 */}
       <Composition
         id="AssetManager"
@@ -54,9 +53,33 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
       />
-
       {/* Bike Composition - 带素材库和字幕的视频（动态加载素材） */}
       <BikeComposition />
+      {/* Table Meme - 可配置的梗图动画模板 */}
+      <Composition
+        id="TableMeme"
+        component={TableMeme}
+        durationInFrames={540} // 9秒 @ 60fps
+        fps={60}
+        width={1080}
+        height={1920}
+        schema={tableMemeSchema}
+        defaultProps={{
+          questionPrefix: "老师问",
+          highlightWord: "table",
+          questionSuffix: "是什么？",
+          smartStudentLabel: "学霸：",
+          smartStudentAnswer: "桌子",
+          smartStudentMedia: "images/table.jpg",
+          smartStudentMediaType: "image" as const,
+          smartStudentSfx: "audios/magic.mp3",
+          myLabel: "我：",
+          myMedia: "videos/table.mp4",
+          myMediaType: "video" as const,
+          mySfx: "audios/alert.mp3",
+          sfxVolume: 0.5,
+        }}
+      />
     </>
   );
 };
