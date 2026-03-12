@@ -39,6 +39,8 @@ rm -rf node_modules/.cache && npx remotion render src/index.ts HelloWorld out/my
 
 ```console
 npx remotion upgrade
+#  or 
+npm i --save-exact remotion@latest @remotion/cli@latest
 ```
 
 ## Docs
