@@ -9,7 +9,9 @@ import {
   Audio,
   Img,
   Video,
+  useVideoConfig,
 } from "remotion";
+import { getVideoMetadata } from "@remotion/media-utils";
 
 // Props Schema - 可配置的参数
 export const tableMemeSchema = z.object({
@@ -37,6 +39,43 @@ export const tableMemeSchema = z.object({
 
 export type TableMemeProps = z.infer<typeof tableMemeSchema>;
 
+// 计算视频元数据 - 根据素材时长动态调整总时长
+export const calculateTableMemeMetadata = async ({
+  props,
+}: {
+  props: TableMemeProps;
+}) => {
+  const fps = 60;
+  const MIN_ANSWER_DURATION = 60; // 最少1秒
+  
+  // 前面固定部分：0.5s(问题) + 0.5s(学霸文字) + 1s(学霸图片) + 1s("我："标签) = 3秒
+  const FIXED_DURATION = 180; // 3秒 @ 60fps
+  
+  let answerDuration = MIN_ANSWER_DURATION; // 默认1秒
+  
+  // 如果是视频类型，获取视频时长
+  if (props.myMediaType === "video") {
+    try {
+      const videoMetadata = await getVideoMetadata(staticFile(props.myMedia));
+      const videoDurationInFrames = Math.ceil(videoMetadata.durationInSeconds * fps);
+      
+      // 如果视频超过1秒，使用视频时长；否则保持1秒
+      if (videoDurationInFrames > MIN_ANSWER_DURATION) {
+        answerDuration = videoDurationInFrames;
+      }
+    } catch (error) {
+      console.warn("无法获取视频时长，使用默认1秒:", error);
+    }
+  }
+  
+  const totalDuration = FIXED_DURATION + answerDuration;
+  
+  return {
+    durationInFrames: totalDuration,
+    fps,
+  };
+};
+
 export const TableMeme: React.FC<TableMemeProps> = ({
   questionPrefix,
   highlightWord,
@@ -52,6 +91,7 @@ export const TableMeme: React.FC<TableMemeProps> = ({
   mySfx,
   sfxVolume,
 }) => {
+  const { durationInFrames } = useVideoConfig();
 
   // 时间轴设置（以帧为单位，60fps）
   const QUESTION_START = 0;
@@ -67,7 +107,8 @@ export const TableMeme: React.FC<TableMemeProps> = ({
   const MY_LABEL_DURATION = 60; // 1秒 - 只显示"我："
   
   const MY_ANSWER_START = MY_LABEL_START + MY_LABEL_DURATION;
-  const MY_ANSWER_DURATION = 60; // 1秒 - 我的回答
+  // 动态计算"我的回答"时长：总时长 - 前面固定的3秒
+  const MY_ANSWER_DURATION = durationInFrames - (QUESTION_DURATION + SMART_TEXT_DURATION + SMART_IMAGE_DURATION + MY_LABEL_DURATION);
 
   return (
     <AbsoluteFill style={{ backgroundColor: "#000" }}>

@@ -4,7 +4,11 @@ import { HelloWorld, myCompSchema } from "./HelloWorld";
 import { Logo, myCompSchema2 } from "./HelloWorld/Logo";
 import { BikeComposition } from "./Bike/BikeComposition";
 import { AssetManager } from "./Bike/AssetManager";
-import { TableMeme, tableMemeSchema } from "./TableMeme";
+import {
+  TableMeme,
+  tableMemeSchema,
+  calculateTableMemeMetadata,
+} from "./TableMeme";
 
 // Each <Composition> is an entry in the sidebar!
 
@@ -59,11 +63,12 @@ export const RemotionRoot: React.FC = () => {
       <Composition
         id="TableMeme"
         component={TableMeme}
-        durationInFrames={240} // 4秒 @ 60fps
+        durationInFrames={240} // 默认4秒 @ 60fps，会根据视频自动调整
         fps={60}
         width={1080}
         height={1920}
         schema={tableMemeSchema}
+        calculateMetadata={calculateTableMemeMetadata}
         defaultProps={{
           questionPrefix: "老师问",
           highlightWord: "table",
@@ -74,7 +79,7 @@ export const RemotionRoot: React.FC = () => {
           smartStudentMediaType: "image" as const,
           smartStudentSfx: "audios/magic.mp3",
           myLabel: "我：",
-          myMedia: "videos/table.mp4",
+          myMedia: "videos/MTB.mp4",
           myMediaType: "video" as const,
           mySfx: "audios/alert.mp3",
           sfxVolume: 1,
