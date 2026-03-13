@@ -9,6 +9,7 @@ import {
   tableMemeSchema,
   calculateTableMemeMetadata,
 } from "./TableMeme";
+import { WhipWord, whipWordSchema, calculateWhipWordMetadata } from "./WhipWord";
 
 // Each <Composition> is an entry in the sidebar!
 
@@ -83,6 +84,27 @@ export const RemotionRoot: React.FC = () => {
           myMediaType: "video" as const,
           mySfx: "audios/alert.mp3",
           sfxVolume: 1,
+        }}
+      />
+      {/* MTB Whip - 单词学习动画：whip的双重含义 */}
+      <Composition
+        id="MTB-Whip"
+        component={WhipWord}
+        durationInFrames={240} // 默认4秒 @ 60fps，会根据视频自动调整
+        fps={60}
+        width={1080}
+        height={1920}
+        schema={whipWordSchema}
+        calculateMetadata={calculateWhipWordMetadata}
+        defaultProps={{
+          word: "whip",
+          backgroundColor1: "#1a1a2e",
+          backgroundColor2: "#16213e",
+          accentColor: "#e94560",
+          bgMusic: "audios/GasPedal.mp3",
+          musicVolume: 0.3,
+          whipVideo: "videos/MTB-whip.mp4",
+          whipVideoVolume: 0.8,
         }}
       />
     </>
